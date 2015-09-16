@@ -15,7 +15,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
  */
-package org.mobicents.media.server.ctrl.rtsp.stack;
+package org.mobicents.media.server.rtsp.stack;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -38,13 +38,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.sdp.MediaDescription;
+import javax.sdp.SdpParseException;
 import javax.sdp.SessionDescription;
 
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.ctrl.rtsp.endpoints.RtspPacketEvent;
-import org.mobicents.media.server.ctrl.rtsp.rtp.RTPSession;
-import org.mobicents.media.server.impl.rtp.RtpTransmitter;
 import org.mobicents.media.server.io.network.UdpManager;
+import org.mobicents.media.server.rtsp.rtp.RtpSessionExt;
+import org.mobicents.media.server.scheduler.Scheduler;
 import org.mobicents.media.server.spi.listener.Listener;
 import org.mobicents.media.server.spi.listener.Listeners;
 import org.mobicents.media.server.spi.listener.TooManyListenersException;
@@ -59,6 +60,7 @@ public class RtspClientStackImpl implements RtspStack {
 	private static Logger logger = Logger.getLogger(RtspClientStackImpl.class);
 
 	private final UdpManager udpManager;
+	private final Scheduler scheduler;
 	private final String user;
 	private final String passwd;
 	private final String host;
@@ -71,11 +73,12 @@ public class RtspClientStackImpl implements RtspStack {
 
 	private String session;
 	private SessionDescription sessionDescription;
-	private List<RTPSession> rtpSessions = new ArrayList<RTPSession>();
+	private List<RtpSessionExt> rtpSessions = new ArrayList<RtpSessionExt>();
 	private Listeners<Listener<RtspPacketEvent>> listeners = new Listeners<Listener<RtspPacketEvent>>();
 
-	public RtspClientStackImpl(UdpManager udpManager, String url) {
+	public RtspClientStackImpl(UdpManager udpManager, Scheduler scheduler, String url) {
 		this.udpManager = udpManager;
+		this.scheduler = scheduler;
 
 		Pattern pattern = Pattern.compile("^rtsp://(([^:]+):([^@]*)@)?([^:/]+)(:([0-9]+))?(.*)");
 		Matcher m = pattern.matcher(url);
@@ -133,19 +136,19 @@ public class RtspClientStackImpl implements RtspStack {
 		}
 	}
 
-	public RTPSession createRtpSession(MediaDescription md) {
+	public RtpSessionExt createRtpSession(MediaDescription md) {
+		RtpSessionExt rtp;
+		try {
+			rtp = new RtpSessionExt(rtpSessions.size(), md.getMedia().getMediaType(), scheduler, udpManager);
+			rtpSessions.add(rtp);
+			return rtp;
+		} catch (SdpParseException e) {
+			throw new IllegalArgumentException("fail get media type", e);
+		}
 
-		RtpTransmitter t = null;
-		RTPSession rtp = new RTPSession(t, udpManager.getPortManager().next(), udpManager.getPortManager().peek());
-		rtp.setRtpInterleaved(rtpSessions.size() * 2 + 0);
-		rtp.setRtcpInterleaved(rtpSessions.size() * 2 + 1);
-		rtp.setMediaDescription(md);
-		rtp.setServerHost(host);
-		rtpSessions.add(rtp);
-		return rtp;
 	}
 
-	public RTPSession getLastRtpSession() {
+	public RtpSessionExt getLastRtpSession() {
 		return rtpSessions.isEmpty() ? null : rtpSessions.get(rtpSessions.size() - 1);
 	}
 

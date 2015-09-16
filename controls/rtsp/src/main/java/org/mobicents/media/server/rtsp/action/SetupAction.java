@@ -15,7 +15,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
  */
-package org.mobicents.media.server.ctrl.rtsp;
+package org.mobicents.media.server.rtsp.action;
+
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.rtsp.RtspHeaders;
+import io.netty.handler.codec.rtsp.RtspResponseStatuses;
+import io.netty.handler.codec.rtsp.RtspVersions;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -30,21 +38,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.ctrl.rtsp.session.RtspSession;
 import org.mobicents.media.server.ctrl.rtsp.session.SessionState;
+import org.mobicents.media.server.rtsp.RtspProvider;
 import org.mobicents.media.server.spi.Connection;
 import org.mobicents.media.server.spi.ConnectionMode;
 import org.mobicents.media.server.spi.ConnectionType;
 import org.mobicents.media.server.spi.Endpoint;
-import org.mobicents.media.server.spi.ResourceUnavailableException;
 import org.mobicents.media.server.spi.player.Player;
-
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.rtsp.RtspHeaders;
-import io.netty.handler.codec.rtsp.RtspResponseStatuses;
-import io.netty.handler.codec.rtsp.RtspVersions;
 
 /**
  * 
@@ -59,7 +58,7 @@ public class SetupAction implements Callable<FullHttpResponse> {
 //    private final String ENDPOINT_NAME = "/mobicents/media/aap/$";
     private final String ENDPOINT_NAME = "/mobicents/media/mms/$";
     private static final ConnectionMode mode = ConnectionMode.SEND_ONLY;
-    private final RtspController rtspController;
+    private final RtspProvider rtspProvider;
     private final HttpRequest request;
     private final String remoteHost;
     private String clientPort = null;
@@ -67,8 +66,8 @@ public class SetupAction implements Callable<FullHttpResponse> {
 	private static final String DATE_PATTERN = "EEE, d MMM yyyy HH:mm:ss z";
 	private static final SimpleDateFormat formatter = new SimpleDateFormat(DATE_PATTERN);
 
-    public SetupAction(RtspController rtspController, HttpRequest request, String remoteIp) {
-        this.rtspController = rtspController;
+    public SetupAction(RtspProvider rtspProvider, HttpRequest request, String remoteIp) {
+        this.rtspProvider = rtspProvider;
         this.request = request;
         this.remoteHost = remoteIp;
     }
@@ -78,7 +77,7 @@ public class SetupAction implements Callable<FullHttpResponse> {
     		return null;
     	}
 
-        return rtspController.getSession(sessionID, true);
+        return rtspProvider.getSession(sessionID, true);
     }
     
     public FullHttpResponse call() throws Exception {
@@ -88,7 +87,7 @@ public class SetupAction implements Callable<FullHttpResponse> {
     	RtspSession session = getSession(this.request.headers().get(RtspHeaders.Names.SESSION));
         if (session == null) {
             response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.SESSION_NOT_FOUND);
-            response.headers().add(HttpHeaders.Names.SERVER, RtspController.SERVER);
+            response.headers().add(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
             response.headers().add(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
             return response;
         }
@@ -110,7 +109,7 @@ public class SetupAction implements Callable<FullHttpResponse> {
         File f = new File(filePath);
         if (f.isDirectory() || !f.exists()) {
                 response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.NOT_FOUND);
-                response.headers().add(HttpHeaders.Names.SERVER, RtspController.SERVER);
+                response.headers().add(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
                 response.headers().add(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
                 return response;
         }
@@ -122,7 +121,7 @@ public class SetupAction implements Callable<FullHttpResponse> {
                 session.getState() == SessionState.RECORDING) {
             // We don't support changing the Transport while state is PLAYING or RECORDING
             response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.METHOD_NOT_VALID);
-            response.headers().add(HttpHeaders.Names.SERVER, RtspController.SERVER);
+            response.headers().add(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
             response.headers().add(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
             return response;
         }
@@ -151,7 +150,7 @@ public class SetupAction implements Callable<FullHttpResponse> {
             } catch (Exception e) {
                 logger.error(e);
                 response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.SERVICE_UNAVAILABLE);
-                response.headers().add(HttpHeaders.Names.SERVER, RtspController.SERVER);
+                response.headers().add(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
                 response.headers().add(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
                 return response;
             }
@@ -180,7 +179,7 @@ public class SetupAction implements Callable<FullHttpResponse> {
         String transport = "RTP/AVP/UDP;unicast;source="+source + ";"+this.clientPort + ";server_port=" + port + "-" + port +
                 ";ssrc=" + Integer.toHexString(ssrc);
         response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.OK);
-        response.headers().add(HttpHeaders.Names.SERVER, RtspController.SERVER);
+        response.headers().add(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
         response.headers().add(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
         response.headers().add(RtspHeaders.Names.SESSION, session.getId());
         response.headers().add(RtspHeaders.Names.TRANSPORT, transport);

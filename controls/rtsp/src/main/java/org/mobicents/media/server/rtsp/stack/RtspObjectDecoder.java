@@ -1,10 +1,10 @@
-package org.mobicents.media.server.ctrl.rtsp.stack;
+package org.mobicents.media.server.rtsp.stack;
 
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.mobicents.media.server.ctrl.rtsp.RtspInterleavedFrame;
 import org.mobicents.media.server.impl.rtp.RtpPacket;
+import org.mobicents.media.server.rtsp.action.RtspInterleavedFrame;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

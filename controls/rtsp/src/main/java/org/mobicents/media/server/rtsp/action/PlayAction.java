@@ -15,18 +15,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
  */
-package org.mobicents.media.server.ctrl.rtsp;
-
-import java.io.File;
-import java.net.URI;
-import java.util.List;
-import java.util.concurrent.Callable;
-
-import org.apache.log4j.Logger;
-import org.mobicents.media.server.ctrl.rtsp.session.RtspSession;
-import org.mobicents.media.server.ctrl.rtsp.session.SessionState;
-import org.mobicents.media.server.spi.Endpoint;
-import org.mobicents.media.server.spi.player.Player;
+package org.mobicents.media.server.rtsp.action;
 
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -36,6 +25,18 @@ import io.netty.handler.codec.rtsp.RtspHeaders;
 import io.netty.handler.codec.rtsp.RtspResponseStatuses;
 import io.netty.handler.codec.rtsp.RtspVersions;
 
+import java.io.File;
+import java.net.URI;
+import java.util.List;
+import java.util.concurrent.Callable;
+
+import org.apache.log4j.Logger;
+import org.mobicents.media.server.ctrl.rtsp.session.RtspSession;
+import org.mobicents.media.server.ctrl.rtsp.session.SessionState;
+import org.mobicents.media.server.rtsp.RtspProvider;
+import org.mobicents.media.server.spi.Endpoint;
+import org.mobicents.media.server.spi.player.Player;
+
 /**
  * 
  * @author amit bhayani
@@ -44,10 +45,10 @@ import io.netty.handler.codec.rtsp.RtspVersions;
 public class PlayAction implements Callable<FullHttpResponse> {
 
 	private static Logger logger = Logger.getLogger(PlayAction.class);
-	private RtspController rtspController = null;
+	private RtspProvider rtspController = null;
 	private HttpRequest request = null;
 
-	public PlayAction(RtspController rtspController, HttpRequest request) {
+	public PlayAction(RtspProvider rtspController, HttpRequest request) {
 		this.rtspController = rtspController;
 		this.request = request;
 	}
@@ -73,7 +74,7 @@ public class PlayAction implements Callable<FullHttpResponse> {
 		File f = new File(filePath);
 		if (f.isDirectory() || !f.exists()) {
 			response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.NOT_FOUND);
-			response.headers().add(HttpHeaders.Names.SERVER, RtspController.SERVER);
+			response.headers().add(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
 			response.headers().add(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
 			return response;
 		}
@@ -81,7 +82,7 @@ public class PlayAction implements Callable<FullHttpResponse> {
 		String sessionID = this.request.headers().get(RtspHeaders.Names.SESSION);
 		if (sessionID == null) {
 			response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.BAD_REQUEST);
-			response.headers().add(HttpHeaders.Names.SERVER, RtspController.SERVER);
+			response.headers().add(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
 			response.headers().add(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
 			return response;
 		}
@@ -89,7 +90,7 @@ public class PlayAction implements Callable<FullHttpResponse> {
 		RtspSession session = rtspController.getSession(this.request.headers().get(RtspHeaders.Names.SESSION), false);
 		if (session == null) {
 			response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.SESSION_NOT_FOUND);
-			response.headers().add(HttpHeaders.Names.SERVER, RtspController.SERVER);
+			response.headers().add(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
 			response.headers().add(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
 			return response;
 		}
@@ -123,7 +124,7 @@ public class PlayAction implements Callable<FullHttpResponse> {
 		}
 
 		response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.OK);
-		response.headers().add(HttpHeaders.Names.SERVER, RtspController.SERVER);
+		response.headers().add(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
 		response.headers().add(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
 		response.headers().add(RtspHeaders.Names.SESSION, session.getId());
 		response.headers().add(RtspHeaders.Names.RTP_INFO, rtpInfo);

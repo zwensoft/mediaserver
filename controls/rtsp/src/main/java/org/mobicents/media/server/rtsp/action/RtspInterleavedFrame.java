@@ -1,4 +1,4 @@
-package org.mobicents.media.server.ctrl.rtsp;
+package org.mobicents.media.server.rtsp.action;
 
 import org.mobicents.media.server.impl.rtp.RtpPacket;
 

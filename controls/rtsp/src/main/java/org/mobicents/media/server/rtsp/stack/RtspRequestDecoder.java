@@ -1,4 +1,4 @@
-package org.mobicents.media.server.ctrl.rtsp.stack;
+package org.mobicents.media.server.rtsp.stack;
 
 import io.netty.handler.codec.http.DefaultHttpRequest;
 import io.netty.handler.codec.http.HttpMessage;

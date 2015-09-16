@@ -1,25 +1,26 @@
-package org.mobicents.media.server.ctrl.rtsp.stack;
+package org.mobicents.media.server.rtsp.stack;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpRequest;
 
+import org.mobicents.media.server.rtsp.RtspProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RtspRequestHandler extends ChannelInboundHandlerAdapter {
   private static Logger logger = LoggerFactory.getLogger(RtspRequestHandler.class);
-  private final RtspServerStackImpl rtspServerStackImpl;
+  private final RtspProvider listener;
 
-  protected RtspRequestHandler(RtspServerStackImpl rtspServerStackImpl) {
-    this.rtspServerStackImpl = rtspServerStackImpl;
+  protected RtspRequestHandler(RtspProvider listener) {
+    this.listener = listener;
   }
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     if (msg instanceof FullHttpRequest) {
     	FullHttpRequest request = (FullHttpRequest) msg;
-      rtspServerStackImpl.processRtspRequest(request, ctx);
+    	listener.process(request, ctx);
     }
   }
 

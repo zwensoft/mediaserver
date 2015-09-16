@@ -2,13 +2,14 @@ package org.mobicents.media.server.ctrl.rtsp;
 
 import org.mobicents.media.server.io.network.UdpManager;
 import org.mobicents.media.server.io.network.channel.Channel;
+import org.mobicents.media.server.rtsp.RtspProvider;
 import org.mobicents.media.server.scheduler.Scheduler;
 
 import junit.framework.TestCase;
 
 public class TestRtspController extends TestCase {
 	private Object lock = new Object();
-	private RtspController controller;
+	private RtspProvider controller;
 	
 	@Override
 	protected void setUp() throws Exception {
@@ -18,13 +19,11 @@ public class TestRtspController extends TestCase {
 		Channel channel = null;
 		udpManager.open(channel);
 		
-		controller = new RtspController(scheduler, udpManager);
-		controller.setIp("172.16.160.143");
-		controller.setPort(554);
+		controller = new RtspProvider(udpManager, 554, scheduler);
 	}
 	
 	public void testServer() throws Exception {
-		controller.start();
+		controller.activate();
 		
 		synchronized (lock) {
 			lock.wait();

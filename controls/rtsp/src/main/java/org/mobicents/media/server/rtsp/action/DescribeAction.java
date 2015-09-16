@@ -15,7 +15,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
  */
-package org.mobicents.media.server.ctrl.rtsp;
+package org.mobicents.media.server.rtsp.action;
 
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -38,6 +38,7 @@ import javax.sdp.SessionDescription;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.io.sdp.fields.ConnectionField;
+import org.mobicents.media.server.rtsp.RtspProvider;
 
 /**
  * 
@@ -47,15 +48,15 @@ import org.mobicents.media.server.io.sdp.fields.ConnectionField;
 public class DescribeAction implements Callable<FullHttpResponse> {
 
     private static Logger logger = Logger.getLogger(DescribeAction.class);
-    final private RtspController rtspController;
+    final private RtspProvider rtspProvider;
     final private HttpRequest request;
     final private String serverIp;
     final private ConnectionField connection;
     
     private static final String DATE_PATTERN = "EEE, d MMM yyyy HH:mm:ss z";
 
-    public DescribeAction(RtspController rtspController, HttpRequest request, String serverIp) {
-        this.rtspController = rtspController;
+    public DescribeAction(RtspProvider rtspProvider, HttpRequest request, String serverIp) {
+        this.rtspProvider = rtspProvider;
         this.request = request;
         this.serverIp = serverIp;
         
@@ -74,12 +75,12 @@ public class DescribeAction implements Callable<FullHttpResponse> {
 
         URI objUri = new URI(this.request.getUri());
         String srcUri = objUri.getPath();
-        SessionDescription sd = rtspController.describe(srcUri);
+        SessionDescription sd = rtspProvider.describe(srcUri);
         
         if (null == sd) {
             logger.warn("No srcUrl passed in request " + srcUri);
             response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.NOT_FOUND);
-            response.headers().set(HttpHeaders.Names.SERVER, RtspController.SERVER);
+            response.headers().set(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
             response.headers().set(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
             return response;
         }
@@ -88,7 +89,7 @@ public class DescribeAction implements Callable<FullHttpResponse> {
         if (null == mds || mds.isEmpty()) {
         	logger.warn("No Media passed in request " + srcUri);
             response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.BAD_REQUEST);
-            response.headers().set(HttpHeaders.Names.SERVER, RtspController.SERVER);
+            response.headers().set(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
             response.headers().set(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
             return response;
         }
@@ -203,7 +204,7 @@ public class DescribeAction implements Callable<FullHttpResponse> {
         } catch (RuntimeException e) {
             logger.warn("There is no free endpoint: " + srcUri);
             response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.SERVICE_UNAVAILABLE);
-            response.headers().add(HttpHeaders.Names.SERVER, RtspController.SERVER);
+            response.headers().add(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
             response.headers().add(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
             return response;
         }
@@ -211,7 +212,7 @@ public class DescribeAction implements Callable<FullHttpResponse> {
 
         byte[] bytes = sdp.toString().getBytes("UTF-8");
 		response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.OK, Unpooled.copiedBuffer(bytes));
-        response.headers().add(HttpHeaders.Names.SERVER, RtspController.SERVER);
+        response.headers().add(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
         response.headers().add(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
         response.headers().add(HttpHeaders.Names.CONTENT_TYPE, "application/sdp");
         response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(bytes.length));

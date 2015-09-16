@@ -1,4 +1,4 @@
-package org.mobicents.media.server.ctrl.rtsp.stack;
+package org.mobicents.media.server.rtsp.stack;
 
 import gov.nist.core.StringTokenizer;
 import gov.nist.javax.sdp.SessionDescriptionImpl;
@@ -18,13 +18,14 @@ import io.netty.handler.timeout.IdleStateHandler;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,9 +35,10 @@ import javax.sdp.SdpException;
 import javax.sdp.SessionDescription;
 
 import org.apache.commons.lang.StringUtils;
-import org.mobicents.media.server.ctrl.rtsp.RtspInterleavedFrame;
 import org.mobicents.media.server.ctrl.rtsp.endpoints.RtspPacketEvent;
-import org.mobicents.media.server.ctrl.rtsp.rtp.RTPSession;
+import org.mobicents.media.server.impl.rtp.channels.RtpSession;
+import org.mobicents.media.server.rtsp.action.RtspInterleavedFrame;
+import org.mobicents.media.server.rtsp.rtp.RtpSessionExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,26 +147,25 @@ public class RtspResponseHandler extends ChannelInboundHandlerAdapter {
 			}
 			
 			// transport
+			InetSocketAddress remoteHost = (InetSocketAddress)ctx.channel().remoteAddress();
 			String transport = response.headers().get("Transport");
-			RTPSession rtp = rtspStack.getLastRtpSession();
+			RtpSessionExt rtp = rtspStack.getLastRtpSession();
 			Matcher matcher = Pattern.compile("([^\\s=;]+)=(([^-;]+)(-([^;]+))?)")
 					.matcher(transport);
 			while (matcher.find()) {
 				String key = matcher.group(1).toLowerCase();
 				if ("server_port".equals(key)) {
-					rtp.setServerRtpPort(Integer.valueOf(matcher.group(3)));
-					rtp.setServerRtcpPort(Integer.valueOf(matcher.group(5)));
+					rtp.connectRtp(new InetSocketAddress(remoteHost.getHostString(), Integer.valueOf(matcher.group(3))));
+					rtp.connectRtcp(new InetSocketAddress(remoteHost.getHostString(), Integer.valueOf(matcher.group(5))));
 				} else if ("ssrc".equals(key)) {
 					rtp.setSsrc(Long.parseLong(matcher.group(2).trim(), 16));
 				} else if ("interleaved".equals(key)) {
-					rtp.setRtpInterleaved(Integer.valueOf(matcher.group(3)));
-					rtp.setRtcpInterleaved(Integer.valueOf(matcher.group(5)));
+					rtp.setRtpChunkIndex(Integer.valueOf(matcher.group(3)));
+					rtp.setRtcpChunkIndex(Integer.valueOf(matcher.group(5)));
 				} else {
 					logger.warn("ignored [{}={}]", key, matcher.group(2));
 				}
 			}
-
-			rtp.play();
 			
 			// next action
 			boolean finish = setup(sd, mediaIndex ++);
@@ -234,11 +235,12 @@ public class RtspResponseHandler extends ChannelInboundHandlerAdapter {
 			} else {
 				MediaDescription md = mds.get(mediaIndex);
 				
-				RTPSession rtp = rtspStack.createRtpSession(md);
-				
+				RtpSessionExt rtp = rtspStack.createRtpSession(md);
+				rtp.bind(false, true);
+
 				
 				// sendTCPSetup(md.getAttribute("control"), rtp.getRtpInterleaved(), rtp.getRtcpInterleaved());
-				sendUDPSetup(md.getAttribute("control"), rtp.getRtpInterleaved(), rtp.getRtcpInterleaved());
+				sendUDPSetup(md.getAttribute("control"), rtp.getRtpPort(), rtp.getRtcpPort());
 				
 				
 				setState(RTSP.SETUP);
@@ -246,6 +248,10 @@ public class RtspResponseHandler extends ChannelInboundHandlerAdapter {
 			
 		} catch (SdpException e) {
 			throw new IllegalArgumentException(e);
+		} catch (IllegalStateException e) {
+			logger.error(e.getMessage(), e);
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
 		}
 		
 		return finish;

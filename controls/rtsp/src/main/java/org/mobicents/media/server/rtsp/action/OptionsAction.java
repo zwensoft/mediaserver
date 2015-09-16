@@ -15,19 +15,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
  */
-package org.mobicents.media.server.ctrl.rtsp;
-
-import java.util.concurrent.Callable;
+package org.mobicents.media.server.rtsp.action;
 
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.rtsp.RtspHeaders;
 import io.netty.handler.codec.rtsp.RtspMethods;
 import io.netty.handler.codec.rtsp.RtspResponseStatuses;
 import io.netty.handler.codec.rtsp.RtspVersions;
+
+import java.util.concurrent.Callable;
+
+import org.mobicents.media.server.rtsp.RtspProvider;
 
 /**
  * 
@@ -36,19 +37,19 @@ import io.netty.handler.codec.rtsp.RtspVersions;
  */
 public class OptionsAction implements Callable<FullHttpResponse> {
 
-	private RtspController rtspController = null;
+	private RtspProvider rtspProvider = null;
 	private HttpRequest request = null;
 	public final static String OPTIONS = RtspMethods.DESCRIBE.name() + ", " + RtspMethods.SETUP.name() + ", "
 			+ RtspMethods.TEARDOWN.name() + ", " + RtspMethods.PLAY.name()+ ", " + RtspMethods.OPTIONS.name();
 
-	public OptionsAction(RtspController rtspController, HttpRequest request) {
-		this.rtspController = rtspController;
+	public OptionsAction(RtspProvider rtspProvider, HttpRequest request) {
+		this.rtspProvider = rtspProvider;
 		this.request = request;
 	}
 
 	public FullHttpResponse call() throws Exception {
 		DefaultFullHttpResponse response = new DefaultFullHttpResponse(RtspVersions.RTSP_1_0, RtspResponseStatuses.OK);
-		response.headers().add(HttpHeaders.Names.SERVER, RtspController.SERVER);
+		response.headers().add(HttpHeaders.Names.SERVER, RtspProvider.SERVER);
 		response.headers().add(RtspHeaders.Names.CSEQ, this.request.headers().get(RtspHeaders.Names.CSEQ));
 		response.headers().add(RtspHeaders.Names.PUBLIC, OPTIONS);
 		return response;

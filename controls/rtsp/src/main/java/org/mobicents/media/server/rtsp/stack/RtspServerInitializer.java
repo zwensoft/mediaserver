@@ -1,4 +1,4 @@
-package org.mobicents.media.server.ctrl.rtsp.stack;
+package org.mobicents.media.server.rtsp.stack;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -7,12 +7,14 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.rtsp.RtspRequestDecoder;
 import io.netty.handler.codec.rtsp.RtspResponseEncoder;
 
+import org.mobicents.media.server.rtsp.RtspProvider;
+
 public class RtspServerInitializer {
 
-  private final RtspServerStackImpl rtspServerStackImpl;
+  private final RtspProvider provider;
 
-  protected RtspServerInitializer(RtspServerStackImpl rtspServerStackImpl) {
-    this.rtspServerStackImpl = rtspServerStackImpl;
+  public RtspServerInitializer(RtspProvider provider) {
+    this.provider = provider;
   }
 
   public ChannelInitializer<SocketChannel> get() throws Exception {
@@ -23,7 +25,7 @@ public class RtspServerInitializer {
         pipeline.addLast("decoder", new RtspRequestDecoder());
         pipeline.addLast("encoder", new RtspResponseEncoder());
         pipeline.addLast("aggregator", new HttpObjectAggregator(1048576));
-        pipeline.addLast("handler", new RtspRequestHandler(rtspServerStackImpl));
+        pipeline.addLast("handler", new RtspRequestHandler(provider));
       }
     };
   }
