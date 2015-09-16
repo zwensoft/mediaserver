@@ -248,7 +248,7 @@ public class Main {
     	filePath = StringPropertyReplacer.replaceProperties(filePath, System.getProperties());
     	File file = new File(filePath);
         if (file.exists() == false) {
-            throw new IllegalArgumentException("No such file: " + filePath);
+            throw new IllegalArgumentException("No such file: " + file.getAbsolutePath());
         }
         return file.toURI().toURL();
     }

@@ -13,6 +13,21 @@
     <artifactId>bootstrap</artifactId>
     <name>Bootstrap</name>
     
+    <properties>
+    
+            <mobicents.tools.mavenplugin.eclipse.version>1.0.0.BETA2</mobicents.tools.mavenplugin.eclipse.version>
+        <version.jboss.jbossas>5.0.1.GA</version.jboss.jbossas>
+        <version.jboss.microcontainer>2.2.0.M2</version.jboss.microcontainer>
+        <version.javassist>3.9.0.GA</version.javassist>
+        <version.freetts>1.2.2</version.freetts>
+        <log4j.version>1.2.12</log4j.version>
+        <version.concurrent>1.3.4</version.concurrent>
+        <version.mtp>1.0.0-SNAPSHOT</version.mtp>
+        <version.stream>1.0.0-SNAPSHOT</version.stream>
+        <version.m3ua>1.0.0-SNAPSHOT</version.m3ua>
+        <version.hardware>1.0.0-SNAPSHOT</version.hardware>
+        <version.ss7.management>1.0.0-SNAPSHOT</version.ss7.management>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.mobicents.media</groupId>
@@ -131,7 +146,7 @@
                     <source>1.7</source>
                     <target>1.7</target>
                 </configuration>
-            </plugin>
+            </plugin><!--
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
@@ -149,7 +164,7 @@
                     </execution>
                 </executions>
             </plugin>
-	        <!--<plugin>
+	        <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
