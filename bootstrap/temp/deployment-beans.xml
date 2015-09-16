@@ -16,10 +16,10 @@
         <constructor>
             <parameter><inject bean="Scheduler"/></parameter>
         </constructor>
-        <property name="bindAddress">127.0.0.1</property>
-        <property name="localBindAddress">127.0.0.1</property>
+        <property name="bindAddress">172.16.160.143</property>
+        <property name="localBindAddress">172.16.160.143</property>
         <property name="externalAddress"><null/></property>
-		<property name="localNetwork">127.0.0.1</property>
+		<property name="localNetwork">172.16.160.143</property>
 		<property name="localSubnet">255.255.255.255</property>
 		<property name="useSbc">false</property>
 		<property name="rtpTimeout">0</property>
@@ -86,6 +86,16 @@
         <property name="configuration">mgcp-conf.xml</property>
 		<property name="poolSize">25</property>
     </bean>    
+    
+    <!-- RTSP Controller definition -->
+    <bean name="RTSP" class ="org.mobicents.media.server.rtsp.controller.Controller">
+        <property name="udpInterface"><inject bean="localhost"/></property>
+        <property name="port">554</property>
+        <property name="scheduler"><inject bean="Scheduler"/></property>
+        <property name="server"><inject bean="MediaServer"/></property>
+        <property name="configuration">mgcp-conf.xml</property>
+        <property name="poolSize">25</property>
+    </bean>  
     
     <!-- Media Server -->
     <bean name="MediaServer" class="org.mobicents.media.core.Server">
