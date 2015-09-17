@@ -260,7 +260,7 @@ public class RtcpTransport extends MultiplexedChannel implements DtlsListener {
         
         // waiting to send rtcp bye packet complete
         try {
-        	Thread.sleep(15);
+        	Thread.sleep(10);
         } catch(Exception ex){
         	
         }
