@@ -257,6 +257,13 @@ public class RtcpTransport extends MultiplexedChannel implements DtlsListener {
          */
         this.rtcpHandler.leaveRtpSession();
         this.bound = false;
+        
+        // waiting to send rtcp bye packet complete
+        try {
+        	Thread.sleep(15);
+        } catch(Exception ex){
+        	
+        }
         super.close();
     }
 
