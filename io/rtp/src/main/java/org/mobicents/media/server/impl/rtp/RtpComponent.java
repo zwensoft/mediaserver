@@ -31,6 +31,7 @@ import org.mobicents.media.server.impl.rtp.sdp.RTPFormat;
 import org.mobicents.media.server.impl.rtp.sdp.RTPFormats;
 import org.mobicents.media.server.scheduler.Scheduler;
 import org.mobicents.media.server.spi.ConnectionMode;
+import org.mobicents.media.server.spi.RelayType;
 import org.mobicents.media.server.spi.dsp.Processor;
 
 /**
@@ -61,7 +62,7 @@ public class RtpComponent extends MediaComponent {
         
         // RTP source
         this.jitterBuffer = new JitterBuffer(new RtpClock(scheduler.getClock()), jitterBufferSize);
-        this.rtpSource = new RtpSource(scheduler, jitterBuffer, rtpSession.getLinearFormat(), transcoder);
+        this.rtpSource = new RtpSource(scheduler, jitterBuffer, rtpSession.getLinearFormat(), transcoder, rtpSession.getRelayType());
         this.dtmfSource = new DtmfSource(scheduler, new RtpClock(scheduler.getClock()));
         
         // RTP sink
