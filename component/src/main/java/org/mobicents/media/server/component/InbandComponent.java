@@ -108,7 +108,7 @@ public class InbandComponent {
                     frames.add(frame);
                 }
             }
-            return frames.toArray(new Frame[frames.size()]);
+            return frames.isEmpty() ? Frame.EMPTY_FRAMES : frames.toArray(new Frame[frames.size()]);
         }
         return EMPTY_DATA;
     }
