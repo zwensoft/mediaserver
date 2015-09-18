@@ -175,6 +175,7 @@ public class MediaInput extends AbstractSink {
                 activeFrame.setOffset(0);
                 activeFrame.setLength(this.linearFormat.getPacketSize());
                 activeFrame.setFormat(frame.getFormat());
+                activeFrame.setSequenceNumber(frame.getSequenceNumber());
                 activeData = activeFrame.getData();
                 byteIndex = 0;
             }
