@@ -382,6 +382,11 @@ public class UdpManager {
 		for (int q = 0; q < 100; q++) {
 			try {
 				channel.socket().bind(new InetSocketAddress(bindAddress, port));
+
+				/** set receive buffer to 16 */
+				if (channel.socket().getReceiveBufferSize() < 16 * 1024) {
+					channel.socket().setReceiveBufferSize(16 * 1024);
+				}
 				ex = null;
 				break;
 			} catch (SocketException e) {
