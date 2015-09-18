@@ -245,12 +245,13 @@ public class JitterBuffer implements Serializable {
 
         // use time stamp to find correct position to insert a packet
         int currIndex = queue.size() - 1;
-        while (currIndex >= 0 && queue.get(currIndex).getTimestamp() > f.getTimestamp()) {
+        while (currIndex >= 0 && queue.get(currIndex).getSequenceNumber() > f.getSequenceNumber() ) {
             currIndex--;
         }
 
         // check for duplicate packet
         if (currIndex >= 0 && queue.get(currIndex).getSequenceNumber() == f.getSequenceNumber()) {
+        	logger.warn("duplicate packet");
             return;
         }
 
@@ -326,7 +327,6 @@ public class JitterBuffer implements Serializable {
         // convert duration to nanoseconds
         frame.setDuration(frame.getDuration() * 1000000L);
         frame.setTimestamp(frame.getTimestamp() * 1000000L);
-
         return frame;
     }
 
