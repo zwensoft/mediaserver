@@ -22,6 +22,7 @@
 
 package org.mobicents.media.server.spi.format;
 
+import org.mobicents.media.server.spi.MediaType;
 import org.mobicents.media.server.utils.Text;
 
 /**
@@ -38,6 +39,7 @@ public class Format implements Cloneable {
 
     private Boolean sendPTime=false;
     
+    private MediaType mediaType = MediaType.AUDIO;
     /**
      * Creates new descriptor.
      *
@@ -47,6 +49,16 @@ public class Format implements Cloneable {
         this.name = name;
     }
 
+    /**
+     * Creates new descriptor.
+     *
+     * @param name the encoding name
+     * @param type the media type, audio or video?
+     */
+    public Format(EncodingName name, MediaType type) {
+        this.name = name;
+        this.mediaType = mediaType;
+    }
     
     /**
      * Gets the encoding name.
@@ -57,6 +69,10 @@ public class Format implements Cloneable {
         return name;
     }
 
+    public MediaType getMediaType() {
+		return mediaType;
+	}
+    
     /**
      * Modifies encoding name.
      *
