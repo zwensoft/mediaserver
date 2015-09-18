@@ -296,11 +296,11 @@ public class JitterBuffer implements Serializable {
 			else {
 				/*
 				 * eg: curr.seg = 3555, f.seg = 3554
-				 *   should move the frame before curr, continue
+				 *   f should before after curr, continue
 				 */
-				
+
 				// but, if curr.seg = 655335, f.seg = 1
-				//      the seq may be [.., 655335, 0, 1, 2,...], we should stop
+				//      the seq may be [.., 655335, 0, 1, 2,...], we should break
 				if (curr.getSequenceNumber() > SEQ_MAX - SEQ_THRESHOLD
 						&& f.getSequenceNumber() < SEQ_THRESHOLD) {
 					break;
