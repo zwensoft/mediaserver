@@ -20,14 +20,12 @@ import io.netty.handler.codec.rtsp.RtspVersions;
 import io.netty.util.concurrent.Future;
 
 import java.net.InetSocketAddress;
-import java.nio.channels.DatagramChannel;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Callable;
 
-import javax.sdp.SessionDescription;
-
+import org.mobicents.media.core.ResourcesPool;
 import org.mobicents.media.server.ctrl.rtsp.session.DefaultSessionAccessor;
 import org.mobicents.media.server.ctrl.rtsp.session.RtspSession;
 import org.mobicents.media.server.ctrl.rtsp.session.RtspSessionAccessor;
@@ -38,6 +36,7 @@ import org.mobicents.media.server.rtsp.action.PlayAction;
 import org.mobicents.media.server.rtsp.action.SetupAction;
 import org.mobicents.media.server.rtsp.action.TeardownAction;
 import org.mobicents.media.server.rtsp.controller.Controller;
+import org.mobicents.media.server.rtsp.controller.RtspManager;
 import org.mobicents.media.server.rtsp.stack.RtspServerInitializer;
 import org.mobicents.media.server.scheduler.Scheduler;
 import org.mobicents.media.server.spi.listener.Listeners;
@@ -72,22 +71,28 @@ public class RtspProvider implements RtspListener {
 	private Listeners<RtspListener> listeners = new Listeners<RtspListener>();
 
 	// Underlying network interface\
-	private UdpManager transport;
+	private UdpManager udpManager;
 
 	// MGCP port number
 	private int port;
 
 	// Job scheduler
 	private Scheduler scheduler;
+	
+	private ResourcesPool resourcesPool;
 
-	public RtspProvider(UdpManager udpInterface, int port, Scheduler scheduler) {
-		this.transport = udpInterface;
+	// 
+	private RtspManager rtspManager;
+	
+	public RtspProvider(UdpManager udpInterface, int port, Scheduler scheduler, ResourcesPool pool) {
+		this.udpManager = udpInterface;
 		this.port = port;
 		this.scheduler = scheduler;
+		this.resourcesPool = pool;
 	}
 
 	public void activate() {
-		String host = transport.getLocalBindAddress();
+		String host = udpManager.getLocalBindAddress();
 		int port = this.port;
 
 		logger.info("Opening channel");
@@ -136,7 +141,7 @@ public class RtspProvider implements RtspListener {
 				action = new OptionsAction(this, request);
 				response = action.call();
 			} else if (request.getMethod().equals(RtspMethods.DESCRIBE)) {
-				action = new DescribeAction(this, request, getHost());
+				action = new DescribeAction(this, request, udpManager.getBindAddress());
 				response = action.call();
 			} else if (request.getMethod().equals(RtspMethods.SETUP)) {
 				InetSocketAddress inetSocketAddress = (InetSocketAddress) ctx
@@ -210,22 +215,29 @@ public class RtspProvider implements RtspListener {
 
 		ctx.writeAndFlush(response);
 	}
-
-	public String getHost() {
-		return transport.getLocalBindAddress();
+	
+	public Scheduler getScheduler() {
+		return scheduler;
+	}
+	
+	public UdpManager getUdpManager() {
+		return udpManager;
+	}
+	
+	public ResourcesPool getResourcesPool() {
+		return resourcesPool;
+	}
+	
+	public void setRtspManager(RtspManager rtspManager) {
+		this.rtspManager = rtspManager;
+	}
+	
+	public RtspManager getRtspManager() {
+		return rtspManager;
 	}
 
-	public int getPort() {
-		return port;
-	}
-
-	public SessionDescription describe(String srcUri) {
-		return null;
-	}
-
-	public RtspSession getSession(String sessionID, boolean b) {
+	public RtspSession getSession(String string, boolean b) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 }

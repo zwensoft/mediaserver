@@ -1,13 +1,13 @@
-package org.mobicents.media.server.rtsp.action;
+package org.mobicents.media.server.rtsp.controller.stack;
 
 import org.mobicents.media.server.impl.rtp.RtpPacket;
 
-public class RtspInterleavedFrame {
+public class RtspFrame {
 	private int channel;
 	private int length;
 	private RtpPacket rtp;
 	
-	public RtspInterleavedFrame(int channel, int length, RtpPacket pkt) {
+	public RtspFrame(int channel, int length, RtpPacket pkt) {
 		this.channel = channel;
 		this.length = length;
 		this.rtp = pkt;

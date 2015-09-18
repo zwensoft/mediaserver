@@ -1,10 +1,9 @@
-package org.mobicents.media.server.rtsp.stack;
+package org.mobicents.media.server.rtsp.controller.stack;
 
 import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.mobicents.media.server.impl.rtp.RtpPacket;
-import org.mobicents.media.server.rtsp.action.RtspInterleavedFrame;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -115,7 +114,7 @@ public abstract class RtspObjectDecoder extends ByteToMessageDecoder {
 				ByteBuffer data = pkt.getBuffer();
 				in.readBytes(data);
 				data.flip();
-				out.add(new RtspInterleavedFrame(rtpChannle, rtpLength, pkt));
+				out.add(new RtspFrame(rtpChannle, rtpLength, pkt));
 
 				state(STATE.READ_FIRST_BYTE, remains);
 				break;

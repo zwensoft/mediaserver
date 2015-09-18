@@ -75,7 +75,7 @@ public class DescribeAction implements Callable<FullHttpResponse> {
 
         URI objUri = new URI(this.request.getUri());
         String srcUri = objUri.getPath();
-        SessionDescription sd = rtspProvider.describe(srcUri);
+        SessionDescription sd = rtspProvider.getRtspManager().describe(srcUri);
         
         if (null == sd) {
             logger.warn("No srcUrl passed in request " + srcUri);

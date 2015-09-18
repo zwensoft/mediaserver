@@ -6,6 +6,7 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.Configurator;
+import org.mobicents.media.core.ResourcesPool;
 import org.mobicents.media.server.io.network.UdpManager;
 import org.mobicents.media.server.rtsp.RtspEvent;
 import org.mobicents.media.server.rtsp.RtspListener;
@@ -36,6 +37,8 @@ public class Controller implements RtspListener, ServerManager {
        
     //server under control
     protected MediaServer server;
+    
+    protected ResourcesPool resourcesPool;
     
     //Endpoint configurator
     private Configurator configurator;
@@ -141,7 +144,7 @@ public class Controller implements RtspListener, ServerManager {
     }
     
     public void createProvider() {
-    	rtspProvider = new RtspProvider(udpInterface, port, scheduler);
+    	rtspProvider = new RtspProvider(udpInterface, port, scheduler, resourcesPool);
     }
     
     

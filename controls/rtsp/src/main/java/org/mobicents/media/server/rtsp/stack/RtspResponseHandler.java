@@ -19,7 +19,6 @@ import io.netty.handler.timeout.IdleStateHandler;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.List;
@@ -36,9 +35,8 @@ import javax.sdp.SessionDescription;
 
 import org.apache.commons.lang.StringUtils;
 import org.mobicents.media.server.ctrl.rtsp.endpoints.RtspPacketEvent;
-import org.mobicents.media.server.impl.rtp.channels.RtpSession;
-import org.mobicents.media.server.rtsp.action.RtspInterleavedFrame;
-import org.mobicents.media.server.rtsp.rtp.RtpSessionExt;
+import org.mobicents.media.server.rtsp.controller.RtpSessionExt;
+import org.mobicents.media.server.rtsp.controller.stack.RtspFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +64,8 @@ public class RtspResponseHandler extends ChannelInboundHandlerAdapter {
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 		super.channelActive(ctx);
 		this.ctx = ctx;
-
+		
+		
 	}
 
 	public void connect() throws IOException {
@@ -114,8 +113,8 @@ public class RtspResponseHandler extends ChannelInboundHandlerAdapter {
 		
 		if (msg instanceof DefaultFullHttpResponse) {
 			messageReceive(ctx, (DefaultFullHttpResponse)msg);
-		} else if (msg instanceof RtspInterleavedFrame){
-			RtspInterleavedFrame rtp = (RtspInterleavedFrame)msg;
+		} else if (msg instanceof RtspFrame){
+			RtspFrame rtp = (RtspFrame)msg;
 			if (rtp.getChannel() % 2 == 0) { // rtp
 				rtspStack.dispatch(new RtspPacketEvent(rtp.getPkt()));
 			}
@@ -160,8 +159,8 @@ public class RtspResponseHandler extends ChannelInboundHandlerAdapter {
 				} else if ("ssrc".equals(key)) {
 					rtp.setSsrc(Long.parseLong(matcher.group(2).trim(), 16));
 				} else if ("interleaved".equals(key)) {
-					rtp.setRtpChunkIndex(Integer.valueOf(matcher.group(3)));
-					rtp.setRtcpChunkIndex(Integer.valueOf(matcher.group(5)));
+					rtp.setRtpChunk(Integer.valueOf(matcher.group(3)));
+					rtp.setRtcpChunk(Integer.valueOf(matcher.group(5)));
 				} else {
 					logger.warn("ignored [{}={}]", key, matcher.group(2));
 				}

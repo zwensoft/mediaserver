@@ -1,5 +1,6 @@
 package org.mobicents.media.server.rtsp.rtp;
 
+import org.mobicents.media.server.rtsp.controller.RtpSessionExt;
 import org.mobicents.media.server.scheduler.Scheduler;
 import org.mobicents.media.server.scheduler.Task;
 

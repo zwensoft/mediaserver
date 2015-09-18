@@ -44,7 +44,7 @@ import javax.sdp.SessionDescription;
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.ctrl.rtsp.endpoints.RtspPacketEvent;
 import org.mobicents.media.server.io.network.UdpManager;
-import org.mobicents.media.server.rtsp.rtp.RtpSessionExt;
+import org.mobicents.media.server.rtsp.controller.RtpSessionExt;
 import org.mobicents.media.server.scheduler.Scheduler;
 import org.mobicents.media.server.spi.listener.Listener;
 import org.mobicents.media.server.spi.listener.Listeners;
@@ -55,7 +55,7 @@ import org.mobicents.media.server.spi.listener.TooManyListenersException;
  * @author amit.bhayani
  * 
  */
-public class RtspClientStackImpl implements RtspStack {
+public class RtspClientStackImpl  {
 
 	private static Logger logger = Logger.getLogger(RtspClientStackImpl.class);
 
@@ -83,7 +83,7 @@ public class RtspClientStackImpl implements RtspStack {
 		Pattern pattern = Pattern.compile("^rtsp://(([^:]+):([^@]*)@)?([^:/]+)(:([0-9]+))?(.*)");
 		Matcher m = pattern.matcher(url);
 		if (!m.find()) {
-			throw new IllegalArgumentException("闈炴硶鐨�RTSP 鍦板潃[" + url + "]");
+			throw new IllegalArgumentException("illegal rtsp url [" + url + "]");
 		}
 
 		user = m.group(2);
@@ -101,7 +101,7 @@ public class RtspClientStackImpl implements RtspStack {
 		this.url = "rtsp://" + host + ":" + port + uri;
 	}
 
-	public void start() throws IOException {
+	public void connect() throws IOException {
 
 		Bootstrap b = new Bootstrap();
 		b.group(workerGroup);
@@ -145,14 +145,13 @@ public class RtspClientStackImpl implements RtspStack {
 		} catch (SdpParseException e) {
 			throw new IllegalArgumentException("fail get media type", e);
 		}
-
 	}
 
 	public RtpSessionExt getLastRtpSession() {
 		return rtpSessions.isEmpty() ? null : rtpSessions.get(rtpSessions.size() - 1);
 	}
 
-	public void stop() {
+	public void disconnect() {
 		if (null != channel) {
 			RtspResponseHandler handler = (RtspResponseHandler) channel.pipeline().get("handler");
 			handler.sendTeardown();
