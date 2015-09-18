@@ -343,10 +343,10 @@ public abstract class AbstractSource extends BaseComponent implements MediaSourc
                         return 0;
                     }
                 }
-
+                
                 // mark frame with media time and sequence number
                 frame.setTimestamp(timestamp);
-                frame.setSequenceNumber(sn);
+                // frame.setSequenceNumber(sn);
 
                 // update media time and sequence number for the next frame
                 timestamp += frame.getDuration();
@@ -380,7 +380,7 @@ public abstract class AbstractSource extends BaseComponent implements MediaSourc
                 }
 
                 // check synchronization
-                if (frameDuration <= 0) {
+                if (frameDuration < 0) {
                     // loss of synchronization
                     isSynchronized = false;
                     return 0;
