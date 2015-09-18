@@ -23,6 +23,7 @@ package org.mobicents.media.server.impl.rtp.channels;
 import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
 import org.mobicents.media.server.io.network.UdpManager;
 import org.mobicents.media.server.scheduler.Scheduler;
+import org.mobicents.media.server.spi.RelayType;
 import org.mobicents.media.server.spi.dsp.Processor;
 import org.mobicents.media.server.spi.format.LinearFormats;
 
@@ -35,13 +36,13 @@ import org.mobicents.media.server.spi.format.LinearFormats;
 public class AudioSession extends RtpSession {
 
     public AudioSession(int channelId, Scheduler scheduler, Processor transcoder, UdpManager udpManager) {
-        super(channelId, AVProfile.AUDIO, LinearFormats.AUDIO, scheduler, transcoder, udpManager);
+        super(channelId, AVProfile.AUDIO, LinearFormats.AUDIO, scheduler, transcoder, udpManager, RelayType.MIXER);
         this.supportedFormats = AVProfile.audio;
         setFormats(this.supportedFormats);
     }
 
     public AudioSession(int channelId, Scheduler scheduler, Processor transcoder, UdpManager udpManager, int jitterBufferSize) {
-        super(channelId, AVProfile.AUDIO, LinearFormats.AUDIO, scheduler, transcoder, udpManager);
+        super(channelId, AVProfile.AUDIO, LinearFormats.AUDIO, scheduler, transcoder, udpManager, RelayType.MIXER);
         this.supportedFormats = AVProfile.audio;
         setFormats(this.supportedFormats);
         setMaxJitterSize(jitterBufferSize);
