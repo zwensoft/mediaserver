@@ -17,7 +17,6 @@ import javax.sdp.MediaDescription;
 import javax.sdp.SdpException;
 import javax.sdp.SessionDescription;
 
-import org.mobicents.media.core.connections.RtpConnection;
 import org.mobicents.media.core.endpoints.AbstractRelayEndpoint;
 import org.mobicents.media.server.impl.rtp.sdp.RTPFormat;
 import org.mobicents.media.server.impl.rtp.sdp.RTPFormats;
@@ -27,9 +26,7 @@ import org.mobicents.media.server.rtsp.controller.stack.ResponseFuture;
 import org.mobicents.media.server.rtsp.controller.stack.RtspClientStack;
 import org.mobicents.media.server.rtsp.controller.stack.Transport;
 import org.mobicents.media.server.scheduler.Scheduler;
-import org.mobicents.media.server.spi.ConnectionType;
 import org.mobicents.media.server.spi.RelayType;
-import org.mobicents.media.server.spi.ResourceUnavailableException;
 import org.mobicents.media.server.spi.format.EncodingName;
 import org.mobicents.media.server.spi.format.Format;
 import org.slf4j.Logger;
@@ -135,6 +132,7 @@ public class RtspEndpoint extends AbstractRelayEndpoint {
 						.connectRtp(stack.getHost(), trans.getRemoteRtpPort());
 				rtpSession.connectRtcp(stack.getHost(),
 						trans.getRemoteRtcpPort());
+				
 				rtpSession.start();
 
 				rtpConnections[mdIndex++] = rtpSession;
