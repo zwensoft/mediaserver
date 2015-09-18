@@ -24,6 +24,7 @@ package org.mobicents.media.server.impl.rtp;
 import org.mobicents.media.server.component.MediaInput;
 import org.mobicents.media.server.impl.AbstractSource;
 import org.mobicents.media.server.scheduler.Scheduler;
+import org.mobicents.media.server.spi.RelayType;
 import org.mobicents.media.server.spi.dsp.Processor;
 import org.mobicents.media.server.spi.format.LinearFormat;
 import org.mobicents.media.server.spi.memory.Frame;
@@ -43,6 +44,18 @@ public class RtpSource extends AbstractSource implements BufferListener {
     private final JitterBuffer jitterBuffer;
     private final MediaInput mediaInput;
 
+    public RtpSource(Scheduler scheduler, JitterBuffer jitterBuffer, LinearFormat linearFormat, Processor transcoder, RelayType type) {
+        super("input", scheduler, Scheduler.INPUT_QUEUE);
+
+        // Media mixing components
+        this.jitterBuffer = jitterBuffer;
+        this.jitterBuffer.setListener(this);
+        this.mediaInput = new MediaInput(1, linearFormat, transcoder);
+        
+        this.mediaInput.setRelayType(type);
+        connect(mediaInput);
+    }
+    
     public RtpSource(Scheduler scheduler, JitterBuffer jitterBuffer, LinearFormat linearFormat, Processor transcoder) {
         super("input", scheduler, Scheduler.INPUT_QUEUE);
 

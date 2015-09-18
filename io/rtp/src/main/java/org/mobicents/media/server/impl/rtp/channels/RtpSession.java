@@ -54,6 +54,7 @@ import org.mobicents.media.server.io.network.UdpManager;
 import org.mobicents.media.server.io.sdp.fields.MediaDescriptionField;
 import org.mobicents.media.server.scheduler.Scheduler;
 import org.mobicents.media.server.spi.ConnectionMode;
+import org.mobicents.media.server.spi.RelayType;
 import org.mobicents.media.server.spi.dsp.Processor;
 import org.mobicents.media.server.spi.format.LinearFormat;
 
@@ -73,6 +74,7 @@ public abstract class RtpSession implements RtpRelay {
     private long ssrc;
     private final String mediaType;
     private final LinearFormat linearFormat;
+    private final RelayType relayType;
     private final RtpClock clock;
     private final RtpStatistics statistics;
     private boolean receivable;
@@ -116,13 +118,14 @@ public abstract class RtpSession implements RtpRelay {
      * @param wallClock The wall clock used to synchronize media flows
      * @param channelsManager The RTP and RTCP channel provider
      */
-    protected RtpSession(int channelId, String mediaType, LinearFormat linearFormat, Scheduler scheduler, Processor transcoder, UdpManager udpManager) {
+    protected RtpSession(int channelId, String mediaType, LinearFormat linearFormat, Scheduler scheduler, Processor transcoder, UdpManager udpManager, RelayType relayType) {
         // RTP channel properties
         this.channelId = channelId;
         this.cname = "";
         this.ssrc = SsrcGenerator.generateSsrc();
         this.mediaType = mediaType;
         this.linearFormat = linearFormat;
+        this.relayType = null != relayType ? relayType : RelayType.MIXER;
         this.clock = new RtpClock(scheduler.getClock());
         this.statistics = new RtpStatistics(clock, this.ssrc);
         this.open = false;
@@ -164,6 +167,10 @@ public abstract class RtpSession implements RtpRelay {
         return linearFormat;
     }
 
+    public RelayType getRelayType() {
+		return relayType;
+	}
+    
     /**
      * Gets the synchronization source of the channel.
      * 
