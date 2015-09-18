@@ -492,55 +492,59 @@ public class UdpManager {
 
 			// select channels ready for IO and ignore error
 			try {
-				localSelector.selectNow();
-				Iterator<SelectionKey> it = localSelector.selectedKeys().iterator();
-				while (it.hasNext()) {
-					SelectionKey key = it.next();
-					it.remove();
-					
-					// get references to channel and associated RTP socket
-					DatagramChannel udpChannel = (DatagramChannel) key.channel();
-					Object attachment = key.attachment();
-					
-					if (attachment == null) {
-						continue;
-					}
-
-					if(attachment instanceof ProtocolHandler) {
-						ProtocolHandler handler = (ProtocolHandler) key.attachment();
-
-						if (!udpChannel.isOpen()) {
-							handler.onClosed();
+				for (; localSelector.selectNow() > 0; ) {
+					Iterator<SelectionKey> it = localSelector.selectedKeys().iterator();
+					while (it.hasNext()) {
+						SelectionKey key = it.next();
+						it.remove();
+						
+						// get references to channel and associated RTP socket
+						DatagramChannel udpChannel = (DatagramChannel) key.channel();
+						Object attachment = key.attachment();
+						
+						if (attachment == null) {
 							continue;
 						}
 
-						// do read
-						if (key.isReadable()) {
-							handler.receive(udpChannel);
-							count++;
-						}
-						
-					} else if (attachment instanceof Channel) {
-						Channel channel = (Channel) attachment;
+						if(attachment instanceof ProtocolHandler) {
+							ProtocolHandler handler = (ProtocolHandler) key.attachment();
 
-						// Perform an operation only if channel is open and key is valid
-						if(udpChannel.isOpen()) {
-							if(key.isValid()) {
-								channel.receive();
-								count++;
-								
-								if(channel.hasPendingData()) {
-									channel.send();
-									count++;
-								}
+							if (!udpChannel.isOpen()) {
+								handler.onClosed();
+								continue;
 							}
-						} else {
-							// Close data channel if datagram channel is closed
-							channel.close();
+
+							// do read
+							if (key.isReadable()) {
+								handler.receive(udpChannel);
+								count++;
+							}
+							
+						} else if (attachment instanceof Channel) {
+							Channel channel = (Channel) attachment;
+
+							// Perform an operation only if channel is open and key is valid
+							if(udpChannel.isOpen()) {
+								if(key.isValid()) {
+									channel.receive();
+									count++;
+									
+									if(channel.hasPendingData()) {
+										channel.send();
+										count++;
+									}
+								}
+							} else {
+								// Close data channel if datagram channel is closed
+								channel.close();
+							}
 						}
 					}
+					
+
+					localSelector.selectedKeys().clear();
 				}
-				localSelector.selectedKeys().clear();
+				
 			} catch (IOException e) {
 				logger.error(e);
 				return 0;
