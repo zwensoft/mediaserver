@@ -237,6 +237,7 @@ public class JitterBuffer implements Serializable {
         f.setTimestamp(rtpClock.convertToAbsoluteTime(packet.getTimestamp()));
         f.setOffset(0);
         f.setLength(packet.getPayloadLength());
+        f.setMarker(packet.getMarker());
         packet.getPayload(f.getData(), 0);
         f.setFormat(this.currentFormat.getFormat());
 
@@ -278,10 +279,14 @@ public class JitterBuffer implements Serializable {
 
         // overflow?
         // only now remove packet if overflow, possibly the same packet we just received
-        if (queue.size() > DEFAULT_QUEUE_SIZE) {
+        if (queue.size() > maxJitterSize) {
             logger.warn("Buffer overflow!");
             dropCount++;
             queue.remove(0).recycle();
+            
+            if (null != listener) {
+            	listener.onFill();
+            }
         }
 
         // check if this buffer already full
