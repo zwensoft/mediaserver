@@ -31,6 +31,8 @@ import org.mobicents.media.server.spi.format.Format;
  * @author yulian oifa
  */
 public class Frame {
+	public static final Frame[] EMPTY_FRAMES = new Frame[0];
+	
     private Partition partition;
     private byte[] data;
 
@@ -44,6 +46,9 @@ public class Frame {
     private volatile boolean eom;
     private volatile Format format;
     private volatile String header;
+    
+    /** rtp marker */
+    private volatile boolean marker;
     
     protected AtomicBoolean inPartition=new AtomicBoolean(false);
     
@@ -115,6 +120,14 @@ public class Frame {
         return this.eom;
     }
 
+    public boolean isMarker() {
+		return marker;
+	}
+
+    public void setMarker(boolean marker) {
+		this.marker = marker;
+	}
+
     public void setEOM(boolean value) {
         this.eom = value;
     }
@@ -140,9 +153,43 @@ public class Frame {
         frame.duration = duration;
         frame.sn = sn;
         frame.eom = eom;
+        frame.marker = marker;
         frame.format = format;
         frame.timestamp = timestamp;
         frame.header = header;
         return frame;
+    }
+    
+    @Override
+    public String toString() {
+    	StringBuilder buf = new StringBuilder();
+    	buf.append("Frame[").append(format).append("]");
+    	
+    	if (sn < 10) {
+    		buf.append("[0000").append(sn).append("]");
+    	} else if (sn < 100) {
+    		buf.append("[000").append(sn).append("]");
+    	} else if (sn < 1000) {
+    		buf.append("[00").append(sn).append("]");
+    	} else if (sn < 10000) {
+    		buf.append("[0").append(sn).append("]");
+    	} else {
+    		buf.append("[").append(sn).append("]");
+    	}
+    	
+    	
+    	buf.append(", length=").append(length);
+    	buf.append(", timestamp=").append(timestamp);
+    	buf.append(", duration=").append(duration);
+    	
+    	if (isMarker()) {
+    		buf.append(" Mark");
+    	}
+    	
+    	if (isEOM()) {
+    		buf.append(" EOM");
+    	}
+
+    	return buf.toString();
     }
 }
