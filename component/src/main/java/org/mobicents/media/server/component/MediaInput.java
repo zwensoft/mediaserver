@@ -23,6 +23,7 @@ package org.mobicents.media.server.component;
 
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.mobicents.media.server.concurrent.ConcurrentCyclicFIFO;
 import org.mobicents.media.server.impl.AbstractSink;
 import org.mobicents.media.server.spi.RelayType;
@@ -41,10 +42,13 @@ import org.mobicents.media.server.spi.memory.Memory;
 public class MediaInput extends AbstractSink {
 
     private static final long serialVersionUID = 7744459545593089374L;
+    private static final Logger logger = Logger.getLogger(MediaInput.class);
 
     // Input properties
     private static final String NAME_PREFIX = "compound.input.";
-    private static final int BUFFER_SIZE = 3;
+    
+    // 20ms for a frame, 30 * 20 is 600ms delay
+    private static final int BUFFER_SIZE = 30;
 
     private final int inputId;
     private final ConcurrentCyclicFIFO<Frame> buffer;
@@ -204,6 +208,7 @@ public class MediaInput extends AbstractSink {
         frame.setEOM(false);
         frame.setOffset(0);
         if (buffer.size() >= bufferSize) {
+        	logger.info("MediaInput Overflow!");
             buffer.poll().recycle();
         }
         buffer.offer(frame);
