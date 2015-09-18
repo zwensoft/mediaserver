@@ -24,6 +24,8 @@ package org.mobicents.media.server.impl.rtp;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.impl.rtp.sdp.RTPFormat;
@@ -55,7 +57,7 @@ public class JitterBuffer implements Serializable {
 
     // Buffer properties
     private RtpClock rtpClock;
-    private final ArrayList<Frame> queue;
+    private final List<Frame> queue;
     private volatile boolean ready;
     private boolean buffering;
     private int maxJitterSize;
@@ -85,7 +87,7 @@ public class JitterBuffer implements Serializable {
 
     public JitterBuffer(RtpClock clock, int jitterBufferSize) {
         this.rtpClock = clock;
-        this.queue = new ArrayList<Frame>(DEFAULT_QUEUE_SIZE);
+        this.queue = Collections.synchronizedList(new ArrayList<Frame>(DEFAULT_QUEUE_SIZE));
         this.maxJitterSize = jitterBufferSize;
         this.buffering = true;
         this.ready = false;
